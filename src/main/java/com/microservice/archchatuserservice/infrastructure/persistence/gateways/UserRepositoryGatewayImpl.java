@@ -1,7 +1,8 @@
-package com.microservice.archchatuserservice.infrastructure.persistence;
+package com.microservice.archchatuserservice.infrastructure.persistence.gateways;
 
 import com.microservice.archchatuserservice.application.gateways.UserRepositoryGateway;
 import com.microservice.archchatuserservice.domain.User;
+import com.microservice.archchatuserservice.infrastructure.persistence.DataUserRepository;
 import com.microservice.archchatuserservice.infrastructure.persistence.entities.UserEntity;
 import com.microservice.archchatuserservice.infrastructure.persistence.mappers.UserMapper;
 import org.springframework.stereotype.Component;

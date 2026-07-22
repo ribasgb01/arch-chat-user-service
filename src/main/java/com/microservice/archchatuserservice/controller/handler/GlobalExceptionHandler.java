@@ -1,6 +1,7 @@
 package com.microservice.archchatuserservice.controller.handler;
 
 import com.microservice.archchatuserservice.application.exceptions.EmailAlreadyInUseException;
+import com.microservice.archchatuserservice.application.exceptions.InvalidCredentialsException;
 import com.microservice.archchatuserservice.application.exceptions.MinimumAgeException;
 import com.microservice.archchatuserservice.application.exceptions.NicknameAlreadyInUseException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,6 +42,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NicknameAlreadyInUseException.class)
     public ResponseEntity<StandardError> handleNicknameAlreadyInUseException(NicknameAlreadyInUseException e, HttpServletRequest request){
+        StandardError response = new StandardError(
+                LocalDate.now(),
+                HttpStatus.CONFLICT.value(),
+                e.getMessage(),
+                request.getRequestURI()
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<StandardError> handleInvalidCredentialsException(InvalidCredentialsException e, HttpServletRequest request){
         StandardError response = new StandardError(
                 LocalDate.now(),
                 HttpStatus.CONFLICT.value(),

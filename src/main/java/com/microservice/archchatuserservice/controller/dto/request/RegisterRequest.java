@@ -7,10 +7,10 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
-public record UserRegisterRequest(
+public record RegisterRequest(
 
         @NotBlank(message = "É necessário informar um email")
-        @Email
+        @Email(message = "Formato de e-mail inválido")
         String email,
 
         @NotBlank(message = "É necessário informar uma senha")

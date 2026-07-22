@@ -2,8 +2,8 @@ package com.microservice.archchatuserservice.controller;
 
 import com.microservice.archchatuserservice.application.usecases.RegisterUserUseCase;
 import com.microservice.archchatuserservice.application.usecases.dto.RegisterUserInput;
-import com.microservice.archchatuserservice.controller.dto.request.UserRegisterRequest;
-import com.microservice.archchatuserservice.controller.dto.response.UserResponse;
+import com.microservice.archchatuserservice.controller.dto.request.RegisterRequest;
+import com.microservice.archchatuserservice.controller.dto.response.RegisterResponse;
 import com.microservice.archchatuserservice.domain.User;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -15,16 +15,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/users")
-public class RegisterUserController {
+public class RegisterController {
 
     private final RegisterUserUseCase registerUserUseCase;
 
-    public RegisterUserController(RegisterUserUseCase registerUserUseCase){
+    public RegisterController(RegisterUserUseCase registerUserUseCase){
         this.registerUserUseCase = registerUserUseCase;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> register (@Valid @RequestBody UserRegisterRequest request){
+    public ResponseEntity<RegisterResponse> register (@Valid @RequestBody RegisterRequest request){
 
         RegisterUserInput input = new RegisterUserInput(
                 request.email(),
@@ -36,7 +36,7 @@ public class RegisterUserController {
 
         User savedUser = registerUserUseCase.register(input);
 
-        UserResponse response = new UserResponse(
+        RegisterResponse response = new RegisterResponse(
                 savedUser.getId(),
                 savedUser.getEmail(),
                 savedUser.getUsername(),
