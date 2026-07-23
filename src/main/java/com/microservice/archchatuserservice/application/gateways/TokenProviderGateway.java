@@ -4,6 +4,12 @@ import com.microservice.archchatuserservice.domain.User;
 
 public interface TokenProviderGateway {
 
-    String generateToken(User user);
+    String generateAccessToken(User user);
+
+    String generateRefreshToken(User user);
+
     String validateToken(String token);
+
+    Long getRemainingTime(String token);
+
 }

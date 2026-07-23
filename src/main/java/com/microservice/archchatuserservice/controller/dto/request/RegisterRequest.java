@@ -1,9 +1,6 @@
 package com.microservice.archchatuserservice.controller.dto.request;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 
@@ -18,6 +15,7 @@ public record RegisterRequest(
         String password,
 
         @NotBlank(message = "É necessário informar o seu nome de usuário")
+        @Pattern(regexp = "^\\S+$", message = "O campo não pode conter espaços")
         @Size(min = 5, message = "Nome do usuário precisa ter pelo menos 5 caracteres")
         String nickname,
 

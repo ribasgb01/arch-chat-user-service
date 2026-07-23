@@ -1,4 +1,4 @@
-package com.microservice.archchatuserservice.infrastructure.persistence.gateways;
+package com.microservice.archchatuserservice.infrastructure.gateways;
 
 import com.microservice.archchatuserservice.application.gateways.UserRepositoryGateway;
 import com.microservice.archchatuserservice.domain.User;

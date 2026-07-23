@@ -1,9 +1,6 @@
 package com.microservice.archchatuserservice.controller.handler;
 
-import com.microservice.archchatuserservice.application.exceptions.EmailAlreadyInUseException;
-import com.microservice.archchatuserservice.application.exceptions.InvalidCredentialsException;
-import com.microservice.archchatuserservice.application.exceptions.MinimumAgeException;
-import com.microservice.archchatuserservice.application.exceptions.NicknameAlreadyInUseException;
+import com.microservice.archchatuserservice.application.exceptions.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,6 +51,30 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<StandardError> handleInvalidCredentialsException(InvalidCredentialsException e, HttpServletRequest request){
+        StandardError response = new StandardError(
+                LocalDate.now(),
+                HttpStatus.CONFLICT.value(),
+                e.getMessage(),
+                request.getRequestURI()
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<StandardError> handleInvalidTokenException(InvalidTokenException e, HttpServletRequest request){
+        StandardError response = new StandardError(
+                LocalDate.now(),
+                HttpStatus.CONFLICT.value(),
+                e.getMessage(),
+                request.getRequestURI()
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<StandardError> handleUserNotFoundException(InvalidTokenException e, HttpServletRequest request){
         StandardError response = new StandardError(
                 LocalDate.now(),
                 HttpStatus.CONFLICT.value(),

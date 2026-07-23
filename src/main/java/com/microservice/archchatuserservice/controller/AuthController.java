@@ -1,37 +1,77 @@
 package com.microservice.archchatuserservice.controller;
 
 import com.microservice.archchatuserservice.application.usecases.AuthenticationUserUseCase;
+import com.microservice.archchatuserservice.application.usecases.LogoutUserUseCase;
+import com.microservice.archchatuserservice.application.usecases.RefreshTokenUseCase;
+import com.microservice.archchatuserservice.application.usecases.dto.AuthenticationOutput;
 import com.microservice.archchatuserservice.application.usecases.dto.AuthenticationUserInput;
 import com.microservice.archchatuserservice.controller.dto.request.LoginRequest;
 import com.microservice.archchatuserservice.controller.dto.response.LoginResponse;
-import org.springframework.http.HttpStatus;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    public final AuthenticationUserUseCase authenticationUserUseCase;
+    private final AuthenticationUserUseCase authenticationUserUseCase;
+    private final RefreshTokenUseCase refreshTokenUseCase;
+    private final LogoutUserUseCase logoutUserUseCase;
 
-    public AuthController(AuthenticationUserUseCase authenticationUserUseCase){
+    @Value("${api.security.token.refresh-expiration}")
+    private Long refreshExpirationInMs;
+
+    public AuthController(AuthenticationUserUseCase authenticationUserUseCase, RefreshTokenUseCase refreshTokenUseCase, LogoutUserUseCase logoutUserUseCase){
         this.authenticationUserUseCase = authenticationUserUseCase;
+        this.refreshTokenUseCase = refreshTokenUseCase;
+        this.logoutUserUseCase = logoutUserUseCase;
     }
 
-    @RequestMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request){
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request, HttpServletResponse response){
         AuthenticationUserInput input = new AuthenticationUserInput(
                 request.email(),
                 request.password()
         );
 
-        String token = authenticationUserUseCase.authentication(input);
+        AuthenticationOutput output = authenticationUserUseCase.authentication(input);
 
-        LoginResponse response = new LoginResponse(token);
+        ResponseCookie cookie  = ResponseCookie.from("refreshToken", output.refreshToken())
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .maxAge(refreshExpirationInMs / 1000)
+                .path("/api/auth/refresh")
+                .build();
 
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        return ResponseEntity.ok(new LoginResponse(output.accessToken()));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authorizationHeader) {
+
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        String token = authorizationHeader.substring(7);
+
+        logoutUserUseCase.logout(token);
+
+        return ResponseEntity.noContent().build();
+    }
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refresh (@CookieValue(name = "refreshToken", required = false) String refreshToken){
+
+        String newAccessToken = refreshTokenUseCase.refresh(refreshToken);
+
+        return ResponseEntity.ok(new LoginResponse(newAccessToken));
     }
 
 }

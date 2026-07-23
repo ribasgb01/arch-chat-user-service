@@ -1,4 +1,4 @@
-package com.microservice.archchatuserservice.infrastructure.config;
+package com.microservice.archchatuserservice.infrastructure.gateways;
 
 import com.microservice.archchatuserservice.application.gateways.PasswordEncodeGateway;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

@@ -1,5 +1,6 @@
 package com.microservice.archchatuserservice.infrastructure.config;
 
+import com.microservice.archchatuserservice.application.gateways.CacheGateway;
 import com.microservice.archchatuserservice.application.gateways.TokenProviderGateway;
 import com.microservice.archchatuserservice.application.gateways.UserRepositoryGateway;
 import jakarta.servlet.FilterChain;
@@ -19,10 +20,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenProviderGateway tokenProviderGateway;
     private final UserRepositoryGateway userRepositoryGateway;
+    private final CacheGateway cacheGateway;
 
-    public JwtAuthenticationFilter(TokenProviderGateway tokenProviderGateway, UserRepositoryGateway userRepositoryGateway) {
+    public JwtAuthenticationFilter(TokenProviderGateway tokenProviderGateway, UserRepositoryGateway userRepositoryGateway, CacheGateway cacheGateway) {
         this.tokenProviderGateway = tokenProviderGateway;
         this.userRepositoryGateway = userRepositoryGateway;
+        this.cacheGateway = cacheGateway;
     }
 
     @Override
@@ -36,6 +39,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authorizationHeader.substring(7);
+
+        String blacklistKey = "blacklist:" + token;
+
+        if (cacheGateway.exists(blacklistKey)) {
+            filterChain.doFilter(request, response);
+        }
 
         String email = tokenProviderGateway.validateToken(token);
 

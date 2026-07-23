@@ -8,10 +8,7 @@ import com.microservice.archchatuserservice.domain.User;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
@@ -45,5 +42,10 @@ public class RegisterController {
         );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<String> testProtection() {
+        return ResponseEntity.ok("Se você está lendo isso, o seu filtro JWT te autenticou com sucesso!");
     }
 }
