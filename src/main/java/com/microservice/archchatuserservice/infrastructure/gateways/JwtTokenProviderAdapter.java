@@ -33,9 +33,10 @@ public class JwtTokenProviderAdapter implements TokenProviderGateway {
         Date expiryDate = new Date(now.getTime() + accessExpirationTime);
 
         return Jwts.builder()
-                .subject(user.getEmail())
+                .subject(user.getId().toString())
                 .claim("email", user.getEmail())
                 .claim("role", user.getRole())
+                .claim("userId", user.getId().toString())
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(key)
