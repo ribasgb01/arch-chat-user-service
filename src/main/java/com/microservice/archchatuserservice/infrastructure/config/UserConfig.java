@@ -1,13 +1,7 @@
 package com.microservice.archchatuserservice.infrastructure.config;
 
-import com.microservice.archchatuserservice.application.gateways.CacheGateway;
-import com.microservice.archchatuserservice.application.gateways.PasswordEncodeGateway;
-import com.microservice.archchatuserservice.application.gateways.TokenProviderGateway;
-import com.microservice.archchatuserservice.application.gateways.UserRepositoryGateway;
-import com.microservice.archchatuserservice.application.usecases.AuthenticationUserUseCase;
-import com.microservice.archchatuserservice.application.usecases.LogoutUserUseCase;
-import com.microservice.archchatuserservice.application.usecases.RefreshTokenUseCase;
-import com.microservice.archchatuserservice.application.usecases.RegisterUserUseCase;
+import com.microservice.archchatuserservice.application.gateways.*;
+import com.microservice.archchatuserservice.application.usecases.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,9 +15,11 @@ public class UserConfig {
     @Bean
     public RegisterUserUseCase registerUserUseCase (
             UserRepositoryGateway userRepositoryGateway,
-            PasswordEncodeGateway passwordEncodeGateway
+            PasswordEncodeGateway passwordEncodeGateway,
+            CacheGateway cacheGateway,
+            EventPublisherGateway eventPublisherGateway
     ) {
-        return new RegisterUserUseCase(userRepositoryGateway, passwordEncodeGateway);
+        return new RegisterUserUseCase(userRepositoryGateway, passwordEncodeGateway, cacheGateway, eventPublisherGateway);
     }
 
     @Bean
@@ -34,6 +30,14 @@ public class UserConfig {
             CacheGateway cacheGateway
     ) {
         return new AuthenticationUserUseCase(passwordEncodeGateway, userRepositoryGateway, tokenProviderGateway, cacheGateway, refreshExpiration);
+    }
+
+    @Bean
+    public VerifyEmailUseCase verifyEmailUseCase(
+            UserRepositoryGateway userRepositoryGateway,
+            CacheGateway cacheGateway
+    ) {
+        return new VerifyEmailUseCase(userRepositoryGateway, cacheGateway);
     }
 
     @Bean
@@ -48,5 +52,10 @@ public class UserConfig {
     @Bean
     public LogoutUserUseCase logoutUserUseCase(CacheGateway cacheGateway, TokenProviderGateway tokenProviderGateway){
         return new LogoutUserUseCase(cacheGateway, tokenProviderGateway);
+    }
+
+    @Bean
+    public SearchUsersUseCase searchUsersUseCase(UserRepositoryGateway userRepositoryGateway) {
+        return new SearchUsersUseCase(userRepositoryGateway);
     }
 }

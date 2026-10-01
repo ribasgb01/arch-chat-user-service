@@ -3,26 +3,30 @@ package com.microservice.archchatuserservice.application.usecases;
 import com.microservice.archchatuserservice.application.exceptions.EmailAlreadyInUseException;
 import com.microservice.archchatuserservice.application.exceptions.MinimumAgeException;
 import com.microservice.archchatuserservice.application.exceptions.NicknameAlreadyInUseException;
+import com.microservice.archchatuserservice.application.gateways.CacheGateway;
+import com.microservice.archchatuserservice.application.gateways.EventPublisherGateway;
 import com.microservice.archchatuserservice.application.gateways.PasswordEncodeGateway;
 import com.microservice.archchatuserservice.application.gateways.UserRepositoryGateway;
 import com.microservice.archchatuserservice.application.usecases.dto.RegisterUserInput;
 import com.microservice.archchatuserservice.domain.Role;
 import com.microservice.archchatuserservice.domain.User;
+import com.microservice.archchatuserservice.infrastructure.messaging.dto.SendEmailVerificationEvent;
+import lombok.RequiredArgsConstructor;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 public class RegisterUserUseCase {
 
     private final UserRepositoryGateway userRepositoryGateway;
     private final PasswordEncodeGateway passwordEncodeGateway;
+    private final CacheGateway cacheGateway;
+    private final EventPublisherGateway eventPublisherGateway;
 
-    public RegisterUserUseCase(UserRepositoryGateway userRepositoryGateway, PasswordEncodeGateway passwordEncodeGateway){
-
-        this.userRepositoryGateway = userRepositoryGateway;
-        this.passwordEncodeGateway = passwordEncodeGateway;
-    }
+    private static final long VERIFICATION_CODE_EXPIRATION_MS = 10 * 60 * 1000L;
 
     public User register(RegisterUserInput input){
 
@@ -56,6 +60,22 @@ public class RegisterUserUseCase {
                 .role(Role.USER)
                 .build();
 
-        return userRepositoryGateway.save(newUser);
+        User savedUser = userRepositoryGateway.save(newUser);
+
+        String verificationCode = generateVerificationCode();
+
+        cacheGateway.set("verification:code:" + savedUser.getEmail(), verificationCode, VERIFICATION_CODE_EXPIRATION_MS);
+
+        eventPublisherGateway.publishEmailVerification(
+                new SendEmailVerificationEvent(savedUser.getEmail(), savedUser.getUsername(), verificationCode)
+        );
+
+        return savedUser;
+    }
+
+    private String generateVerificationCode() {
+        SecureRandom random = new SecureRandom();
+        int code = 100000 + random.nextInt(900000); // Garante 6 dígitos (de 100000 a 999999)
+        return String.valueOf(code);
     }
 }

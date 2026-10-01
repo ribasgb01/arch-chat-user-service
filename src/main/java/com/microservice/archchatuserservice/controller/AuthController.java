@@ -54,7 +54,11 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<Void> logout(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @CookieValue(name = "refreshToken", required = false) String refreshToken,
+            HttpServletResponse response
+    ) {
 
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             return ResponseEntity.badRequest().build();
@@ -62,10 +66,21 @@ public class AuthController {
 
         String token = authorizationHeader.substring(7);
 
-        logoutUserUseCase.logout(token);
+        logoutUserUseCase.logout(token, refreshToken);
+
+        ResponseCookie clearCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .maxAge(0)
+                .path("/api/auth/refresh")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, clearCookie.toString());
 
         return ResponseEntity.noContent().build();
     }
+
     @PostMapping("/refresh")
     public ResponseEntity<LoginResponse> refresh (@CookieValue(name = "refreshToken", required = false) String refreshToken){
 

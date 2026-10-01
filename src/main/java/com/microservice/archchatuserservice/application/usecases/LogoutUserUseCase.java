@@ -14,7 +14,7 @@ public class LogoutUserUseCase {
         this.tokenProviderGateway = tokenProviderGateway;
     }
 
-    public void logout(String accessToken){
+    public void logout(String accessToken, String refreshToken){
 
         String email = tokenProviderGateway.validateToken(accessToken);
 
@@ -28,6 +28,8 @@ public class LogoutUserUseCase {
             cacheGateway.set("blacklist:" + accessToken, "true", remainingTime);
         }
 
-        cacheGateway.delete("refresh:" + email);
+        if (refreshToken != null) {
+            cacheGateway.delete("refresh:" + refreshToken);
+        }
     }
 }

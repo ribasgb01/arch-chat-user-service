@@ -7,7 +7,9 @@ import com.microservice.archchatuserservice.infrastructure.persistence.entities.
 import com.microservice.archchatuserservice.infrastructure.persistence.mappers.UserMapper;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public class UserRepositoryGatewayImpl implements UserRepositoryGateway {
@@ -38,5 +40,17 @@ public class UserRepositoryGatewayImpl implements UserRepositoryGateway {
     public Optional<User> findByNickname(String nickname) {
         return dataUserRepository.findByNickname(nickname)
                 .map(entity -> userMapper.toDomain(entity));
+    }
+
+    @Override
+    public List<User> searchUsers(String query) {
+        return dataUserRepository.searchUsers(query).stream()
+                .map(userMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public Optional<User> findById(UUID id) {
+        return dataUserRepository.findById(id).map(userMapper::toDomain);
     }
 }

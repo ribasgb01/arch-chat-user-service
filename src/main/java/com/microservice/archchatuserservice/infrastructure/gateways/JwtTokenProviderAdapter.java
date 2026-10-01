@@ -37,6 +37,8 @@ public class JwtTokenProviderAdapter implements TokenProviderGateway {
                 .claim("email", user.getEmail())
                 .claim("role", user.getRole())
                 .claim("userId", user.getId().toString())
+                .claim("username", user.getUsername())
+                .claim("nickname", user.getNickname())
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(key)

@@ -29,9 +29,9 @@ public class RefreshTokenUseCase {
            throw new InvalidTokenException("Refresh token inválido ou expirado");
         }
 
-        String storedToken = cacheGateway.get("refresh:" + email);
+        String storedEmail = cacheGateway.get("refresh:" + refreshToken);
 
-        if (storedToken == null || !storedToken.equals(refreshToken)){
+        if (storedEmail == null || !storedEmail.equals(email)){
             throw new InvalidTokenException("Sessão expirada. Faça login novamente");
         }
 

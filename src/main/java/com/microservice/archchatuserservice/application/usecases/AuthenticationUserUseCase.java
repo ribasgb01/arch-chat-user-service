@@ -43,7 +43,7 @@ public class AuthenticationUserUseCase {
         String accessToken = tokenProviderGateway.generateAccessToken(user);
         String refreshToken = tokenProviderGateway.generateRefreshToken(user);
 
-        cacheGateway.set("refresh:" + user.getEmail(), refreshToken, refreshExpiration);
+        cacheGateway.set("refresh:" + refreshToken, user.getEmail(), refreshExpiration);
 
         return new AuthenticationOutput(accessToken, refreshToken);
     }
